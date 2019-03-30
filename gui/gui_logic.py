@@ -9,14 +9,17 @@ from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeyS
 from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize
 
 
-
-
-
 class GUILogic:
     def __init__(self,app):
         self.app = app
-        self.action()
+        self.main()
 
-    def action(self):
-        # self.app.textEditStatusBar.setReadOnly(0)
-        pass
+    def main(self):
+        app = self.app
+
+        #app.compileButton.clicked.connect(app.textEditStatusBar.clear)
+        
+
+
+
+

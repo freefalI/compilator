@@ -7,8 +7,8 @@ from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeyS
 from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize
 import sys, os
 
-from number_bar import NumberBar
-import gui_logic
+from gui.number_bar import NumberBar
+import gui.gui_logic as  gui_logic
 
 lineHighlightColor  = QColor("#c6ffb3")
 
@@ -179,7 +179,6 @@ class CodeEditor(QMainWindow):
         self.textEditStatusBar.setMaximumSize(QSize(1500, 100))
         self.textEditStatusBar.setReadOnly(1)
 
-        self.compileButton.clicked.connect(self.textEditStatusBar.clear)
 
 
         layoutV = QVBoxLayout()

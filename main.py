@@ -6,14 +6,24 @@ from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeyS
 from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize
 import sys, os
 
+class Compiler:
+    def __init__(self):  
+        self.__config = None
+        self.app = QApplication(sys.argv)
+        self.win = codeeditor.CodeEditor()
+        self.win.setWindowIcon(QIcon.fromTheme("application-text"))
+        self.win.setWindowTitle("Plain Text Edit" + "[*]")
+        self.win.setMinimumSize(640,250)
+        self.win.showMaximized()
+        if len(sys.argv) > 1:
+            print(sys.argv[1])
+            self.win.openFileOnStart(sys.argv[1])
+    def run(self):
+        self.app.exec_()
     
-app = QApplication(sys.argv)
-win = codeeditor.CodeEditor()
-win.setWindowIcon(QIcon.fromTheme("application-text"))
-win.setWindowTitle("Plain Text Edit" + "[*]")
-win.setMinimumSize(640,250)
-win.showMaximized()
-if len(sys.argv) > 1:
-    print(sys.argv[1])
-    win.openFileOnStart(sys.argv[1])
-app.exec_()
+
+
+compiler =  Compiler()
+compiler.run()
+
+

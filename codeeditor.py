@@ -2,76 +2,20 @@
 # -- coding: utf-8 --
 
 from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QVBoxLayout, QApplication, QFileDialog, QMessageBox, QHBoxLayout, \
-                         QFrame, QTextEdit, QToolBar, QComboBox, QLabel, QAction, QLineEdit, QToolButton, QMenu, QMainWindow,QTabWidget,QTableWidget
+                         QFrame, QTextEdit, QToolBar, QComboBox, QLabel, QAction, QLineEdit, QToolButton, QMenu, QMainWindow,QTabWidget,QTableWidget,QPushButton
 from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeySequence, QClipboard, QTextCharFormat, QPalette
-from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings
+from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize
 import sys, os
 
+from number_bar import NumberBar
+import gui_logic
 
-lineBarColor = QColor("#c6ffb3")  
 lineHighlightColor  = QColor("#c6ffb3")
 
-class NumberBar(QWidget):
+
+class CodeEditor(QMainWindow):
     def __init__(self, parent = None):
-        super(NumberBar, self).__init__(parent)
-        self.editor = parent
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        self.editor.blockCountChanged.connect(self.update_width)
-        self.editor.updateRequest.connect(self.update_on_scroll)
-        self.update_width('1')
-
-    def update_on_scroll(self, rect, scroll):
-        if self.isVisible():
-            if scroll:
-                self.scroll(0, scroll)
-            else:
-                self.update()
-
-    def update_width(self, string):
-        width = self.fontMetrics().width(str(string)) + 10
-        if self.width() != width:
-            self.setFixedWidth(width)
-
-    def paintEvent(self, event):
-        if self.isVisible():
-            block = self.editor.firstVisibleBlock()
-            height = self.fontMetrics().height()
-            number = block.blockNumber()
-            painter = QPainter(self)
-            painter.fillRect(event.rect(), lineBarColor)
-            painter.drawRect(0, 0, event.rect().width() - 1, event.rect().height() - 1)
-            font = painter.font()
-
-            current_block = self.editor.textCursor().block().blockNumber() + 1
-
-            condition = True
-            while block.isValid() and condition:
-                block_geometry = self.editor.blockBoundingGeometry(block)
-                offset = self.editor.contentOffset()
-                block_top = block_geometry.translated(offset).top()
-                number += 1
-
-                rect = QRect(0, block_top, self.width() - 5, height)
-
-                if number == current_block:
-                    font.setBold(True)
-                else:
-                    font.setBold(False)
-
-                painter.setFont(font)
-                painter.drawText(rect, Qt.AlignRight, '%i'%number)
-
-                if block_top > event.rect().bottom():
-                    condition = False
-
-                block = block.next()
-
-            painter.end()
-
-class myEditor(QMainWindow):
-    def __init__(self, parent = None):
-        super(myEditor, self).__init__(parent)
+        super(CodeEditor, self).__init__(parent)
 
 
         self.MaxRecentFiles = 5
@@ -129,7 +73,6 @@ class myEditor(QMainWindow):
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QWidget()
         self.tab.setObjectName("tab")
-        
         self.tabWidget.addTab(self.tab, "")
         # self.tab_2 = QWidget()
         # self.tab_2.setObjectName("tab_2")
@@ -143,6 +86,7 @@ class myEditor(QMainWindow):
         self.tableWidget_2.setColumnCount(3)
         self.tableWidget_2.setRowCount(3)        
         self.tabWidget.addTab(self.tab_2, "")
+        #self.tableWidget_2.setFlags(self.tableWidget_2.flags() | Qt.ItemIsEditable)
 
        
         self.tab_3 = QWidget()
@@ -219,10 +163,29 @@ class myEditor(QMainWindow):
         self.tbf.addAction("replace all", self.replaceAll)
         self.tbf.addSeparator()
 
+        #compile button 
+
+        self.compileButton = QPushButton(self.tbf)
+        self.compileButton.setGeometry(QRect(0, 10, 87, 29))
+        self.compileButton.setObjectName("pushButton")
+        self.compileButton.setText( "Compile")
+        self.compileButton.setGeometry(QRect(0, 0, 300, 300))
+        self.compileButton.setMaximumSize(QSize(100, 200))
+
+        # satus bar 
+        self.textEditStatusBar = QTextEdit(self.tbf)
+        self.textEditStatusBar.setGeometry(QRect(0, 50, 801, 101))
+        self.textEditStatusBar.setObjectName("textEdit")
+        self.textEditStatusBar.setMaximumSize(QSize(1500, 100))
+        self.textEditStatusBar.setReadOnly(1)
+
+        self.compileButton.clicked.connect(self.textEditStatusBar.clear)
+
+
         layoutV = QVBoxLayout()
 
         bar=self.menuBar()
-
+        bar.setMaximumSize(QSize(100, 100))
         self.filemenu=bar.addMenu("File")
         self.separatorAct = self.filemenu.addSeparator()
         self.filemenu.addAction(self.newAct)
@@ -249,11 +212,22 @@ class myEditor(QMainWindow):
         # layoutV.addWidget(self.tbf)
         # layoutV.addLayout(layoutH)
 
+        layoutH2 = QHBoxLayout()
+        layoutH2.setSpacing(1.5)
+        layoutH2.addWidget(bar)
+        layoutH2.addWidget(self.tbf)
+        layoutH2.addWidget(self.compileButton)
+
 
         layoutV2 = QVBoxLayout()
-        layoutV2.addWidget(bar)      
-        layoutV2.addWidget(self.tbf)
+        #layoutV2.addWidget(bar)      
+        #layoutV2.addWidget(self.tbf)
+        #layoutV2.addWidget(self.compileButton) 
+        layoutV2.addLayout(layoutH2)
+
         layoutV2.addLayout(layoutH)
+        layoutV2.addWidget(self.textEditStatusBar) 
+        
         self.tab.setLayout(layoutV2)
 
 
@@ -280,6 +254,12 @@ class myEditor(QMainWindow):
         # Brackets ExtraSelection ...
         self.left_selected_bracket  = QTextEdit.ExtraSelection()
         self.right_selected_bracket = QTextEdit.ExtraSelection()
+
+
+
+        gui_logic.GUILogic(self)
+
+
 
     def createActions(self):
         for i in range(self.MaxRecentFiles):
@@ -649,17 +629,4 @@ selection-background-color: #ACDED5;
 } 
     """       
 
-if __name__ == '__main__':
-
-
-    
-    app = QApplication(sys.argv)
-    win = myEditor()
-    win.setWindowIcon(QIcon.fromTheme("application-text"))
-    win.setWindowTitle("Plain Text Edit" + "[*]")
-    win.setMinimumSize(640,250)
-    win.showMaximized()
-    if len(sys.argv) > 1:
-        print(sys.argv[1])
-        win.openFileOnStart(sys.argv[1])
-    app.exec_()
+# if __name__ == '__main__':

@@ -4,16 +4,18 @@
 from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QVBoxLayout, QApplication, QFileDialog, QMessageBox, QHBoxLayout, \
                          QFrame, QTextEdit, QToolBar, QComboBox, QLabel, QAction, QLineEdit, QToolButton, QMenu, QMainWindow,QTabWidget,QTableWidget,QPushButton
 from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeySequence, QClipboard, QTextCharFormat, QPalette
-from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize
+from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize,QObject,pyqtSlot,pyqtSignal
 import sys, os
 
 from gui.number_bar import NumberBar
-import gui.gui_logic as  gui_logic
+
 
 lineHighlightColor  = QColor("#c6ffb3")
 
 
 class CodeEditor(QMainWindow):
+    clickedd = pyqtSignal(bool)
+
     def __init__(self, parent = None):
         super(CodeEditor, self).__init__(parent)
 
@@ -27,6 +29,8 @@ class CodeEditor(QMainWindow):
         self.editor = QPlainTextEdit() 
         self.editor.setStyleSheet(stylesheet2(self))
         self.editor.setFrameStyle(QFrame.NoFrame)
+        self.editor.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
         self.editor.setTabStopWidth(14)
         self.extra_selections = []
         self.fname = ""
@@ -88,7 +92,13 @@ class CodeEditor(QMainWindow):
         self.tabWidget.addTab(self.tab_2, "")
         #self.tableWidget_2.setFlags(self.tableWidget_2.flags() | Qt.ItemIsEditable)
 
-       
+        self.textEditBar2 = QTextEdit(self.tab_2)
+        self.textEditBar2.setGeometry(QRect(0, 50, 801, 900))
+        self.textEditBar2.setObjectName("textEdit")
+        self.textEditBar2.setMaximumSize(QSize(1500, 500))
+        self.textEditBar2.setReadOnly(1)
+        self.textEditBar2.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
         self.tab_3 = QWidget()
         self.tab_3.setObjectName("tab_3")
         self.tableWidget_3 = QTableWidget(self.tab_3)
@@ -98,6 +108,12 @@ class CodeEditor(QMainWindow):
         self.tableWidget_3.setRowCount(3)        
         self.tabWidget.addTab(self.tab_3, "")
 
+        self.textEditBar3 = QTextEdit(self.tab_3)
+        self.textEditBar3.setGeometry(QRect(0, 50, 801, 900))
+        self.textEditBar3.setObjectName("textEdit")
+        self.textEditBar3.setMaximumSize(QSize(1500, 500))
+        self.textEditBar3.setReadOnly(1)
+        self.textEditBar3.setStyleSheet('font-size: 12pt; font-family: Consolas;')
 
         self.tab_4 = QWidget()
         self.tab_4.setObjectName("tab_4")
@@ -107,6 +123,13 @@ class CodeEditor(QMainWindow):
         self.tableWidget_4.setColumnCount(3)
         self.tableWidget_4.setRowCount(3)        
         self.tabWidget.addTab(self.tab_4, "")
+
+        self.textEditBar4 = QTextEdit(self.tab_4)
+        self.textEditBar4.setGeometry(QRect(0, 50, 801, 900))
+        self.textEditBar4.setObjectName("textEdit")
+        self.textEditBar4.setMaximumSize(QSize(1500, 500))
+        self.textEditBar4.setReadOnly(1)
+        self.textEditBar4.setStyleSheet('font-size: 12pt; font-family: Consolas;')
 
 
         self.tab_5 = QWidget()
@@ -118,6 +141,15 @@ class CodeEditor(QMainWindow):
         self.tableWidget_5.setRowCount(3)        
         self.tabWidget.addTab(self.tab_5, "")
 
+        self.textEditBar5 = QTextEdit(self.tab_5)
+        self.textEditBar5.setGeometry(QRect(0, 50, 801, 900))
+        self.textEditBar5.setObjectName("textEdit")
+        self.textEditBar5.setMaximumSize(QSize(1500, 500))
+        self.textEditBar5.setReadOnly(1)
+        self.textEditBar5.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
+
+
         self.tab_6 = QWidget()
         self.tab_6.setObjectName("tab_6")
         self.tableWidget_6 = QTableWidget(self.tab_6)
@@ -127,12 +159,59 @@ class CodeEditor(QMainWindow):
         self.tableWidget_6.setRowCount(3)       
         self.tabWidget.addTab(self.tab_6, "")
 
+        self.textEditBar6 = QTextEdit(self.tab_6)
+        self.textEditBar6.setGeometry(QRect(0, 50, 801, 900))
+        self.textEditBar6.setObjectName("textEdit")
+        self.textEditBar6.setMaximumSize(QSize(1500, 500))
+        self.textEditBar6.setReadOnly(1)
+        self.textEditBar6.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
+
+
+
+        self.tab_7 = QWidget()
+        self.tab_7.setObjectName("tab_7")
+        self.tableWidget_7 = QTableWidget(self.tab_7)
+        self.tableWidget_7.setGeometry(QRect(0, 0, 1300, 600))
+        self.tableWidget_7.setObjectName("tableWidget_7")
+        self.tableWidget_7.setColumnCount(3)
+        self.tableWidget_7.setRowCount(3)       
+        self.tabWidget.addTab(self.tab_7, "")
+
+        self.textEditBar7 = QTextEdit(self.tab_7)
+        self.textEditBar7.setGeometry(QRect(0, 50, 801, 900))
+        self.textEditBar7.setObjectName("textEdit")
+        self.textEditBar7.setMaximumSize(QSize(1500, 500))
+        self.textEditBar7.setReadOnly(1)
+        self.textEditBar7.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
+        self.tab_8 = QWidget()
+        self.tab_8.setObjectName("tab_8")
+        self.tableWidget_8 = QTableWidget(self.tab_8)
+        self.tableWidget_8.setGeometry(QRect(0, 0, 1300, 600))
+        self.tableWidget_8.setObjectName("tableWidget_8")
+        self.tableWidget_8.setColumnCount(3)
+        self.tableWidget_8.setRowCount(3)       
+        self.tabWidget.addTab(self.tab_8, "")
+
+        self.textEditBar8 = QTextEdit(self.tab_8)
+        self.textEditBar8.setGeometry(QRect(0, 50, 801, 900))
+        self.textEditBar8.setObjectName("textEdit")
+        self.textEditBar8.setMaximumSize(QSize(1500, 500))
+        self.textEditBar8.setReadOnly(1)
+        self.textEditBar8.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
+
+
+
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), "Програмний код")
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), "Таблиця лексем")
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), "Таблиця идентификаторов")
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), "Таблиця iдентификаторiв")
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), "Таблиця констант")
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5),  "Таблиця видношень")
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5),  "Таблиця вiдношень")
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), "Граматика")
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), "Полiз")
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_8), "Полiз 2")
 
 
 
@@ -171,6 +250,9 @@ class CodeEditor(QMainWindow):
         self.compileButton.setText( "Compile")
         self.compileButton.setGeometry(QRect(0, 0, 300, 300))
         self.compileButton.setMaximumSize(QSize(100, 200))
+        
+        
+
 
         # satus bar 
         self.textEditStatusBar = QTextEdit(self.tbf)
@@ -179,7 +261,7 @@ class CodeEditor(QMainWindow):
         self.textEditStatusBar.setMaximumSize(QSize(1500, 100))
         self.textEditStatusBar.setReadOnly(1)
 
-
+        self.textEditStatusBar.setStyleSheet('font-size: 12pt; font-family: Courier;')
 
         layoutV = QVBoxLayout()
 
@@ -255,10 +337,28 @@ class CodeEditor(QMainWindow):
         self.right_selected_bracket = QTextEdit.ExtraSelection()
 
 
+        
+        # self.compileButton.clicked.connect(gui_logic.GUILogic.compile_handler)
+        # self.compileButton.clicked.connect(self.on_changed_value)
+        
 
-        gui_logic.GUILogic(self)
+        # self.changedValue.emit(value)
 
 
+
+
+
+        # self.compileButton.clicked.connect(logic.compile_handler)
+
+        # logic.main()
+    # @pyqtSlot(bool)
+    def on_changed_value(self, value):
+        print("asdfasdfsadfasdfasdf",value)
+        self.compileButton.clicked.emit(value)
+
+
+    def aa(self):
+        print("aasdfsadf")
 
     def createActions(self):
         for i in range(self.MaxRecentFiles):

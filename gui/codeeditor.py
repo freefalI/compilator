@@ -2,8 +2,9 @@
 # -- coding: utf-8 --
 
 from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QVBoxLayout, QApplication, QFileDialog, QMessageBox, QHBoxLayout, \
-                         QFrame, QTextEdit, QToolBar, QComboBox, QLabel, QAction, QLineEdit, QToolButton, QMenu, QMainWindow,QTabWidget,QTableWidget,QPushButton
-from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeySequence, QClipboard, QTextCharFormat, QPalette
+                         QFrame, QTextEdit, QToolBar, QComboBox, QLabel, QAction, QLineEdit, QToolButton, QMenu,\
+                              QMainWindow,QTabWidget,QTableWidget,QPushButton,QHeaderView
+from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeySequence, QClipboard, QTextCharFormat, QPalette,QStandardItemModel
 from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize,QObject,pyqtSlot,pyqtSignal
 import sys, os
 
@@ -87,33 +88,38 @@ class CodeEditor(QMainWindow):
         self.tableWidget_2 = QTableWidget(self.tab_2)
         self.tableWidget_2.setGeometry(QRect(0, 0, 1300, 600))
         self.tableWidget_2.setObjectName("tableWidget_2")
-        self.tableWidget_2.setColumnCount(3)
-        self.tableWidget_2.setRowCount(3)        
+        self.tableWidget_2.setColumnCount(7)
+        self.tableWidget_2.setRowCount(500)        
         self.tabWidget.addTab(self.tab_2, "")
+        self.tableWidget_2.setHorizontalHeaderLabels(['Номер', 'Рядок', 'Лексема','Код','Код idn', 'Код const', 'Код label'])
+            #id  |line |lexeme              |code      | idn code | con code |label code|
+
         #self.tableWidget_2.setFlags(self.tableWidget_2.flags() | Qt.ItemIsEditable)
 
-        self.textEditBar2 = QTextEdit(self.tab_2)
-        self.textEditBar2.setGeometry(QRect(0, 50, 801, 900))
-        self.textEditBar2.setObjectName("textEdit")
-        self.textEditBar2.setMaximumSize(QSize(1500, 500))
-        self.textEditBar2.setReadOnly(1)
-        self.textEditBar2.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+        # self.textEditBar2 = QTextEdit(self.tab_2)
+        # self.textEditBar2.setGeometry(QRect(0, 50, 801, 900))
+        # self.textEditBar2.setObjectName("textEdit")
+        # self.textEditBar2.setMaximumSize(QSize(1500, 500))
+        # self.textEditBar2.setReadOnly(1)
+        # self.textEditBar2.setStyleSheet('font-size: 12pt; font-family: Consolas;')
 
         self.tab_3 = QWidget()
         self.tab_3.setObjectName("tab_3")
         self.tableWidget_3 = QTableWidget(self.tab_3)
         self.tableWidget_3.setGeometry(QRect(0, 0, 1300, 600))
         self.tableWidget_3.setObjectName("tableWidget_3")
-        self.tableWidget_3.setColumnCount(3)
-        self.tableWidget_3.setRowCount(3)        
+        self.tableWidget_3.setColumnCount(4)
+        self.tableWidget_3.setRowCount(100)        
         self.tabWidget.addTab(self.tab_3, "")
+        self.tableWidget_3.setHorizontalHeaderLabels(['Номер', 'Значення', 'Тип','Рядок'])
 
-        self.textEditBar3 = QTextEdit(self.tab_3)
-        self.textEditBar3.setGeometry(QRect(0, 50, 801, 900))
-        self.textEditBar3.setObjectName("textEdit")
-        self.textEditBar3.setMaximumSize(QSize(1500, 500))
-        self.textEditBar3.setReadOnly(1)
-        self.textEditBar3.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
+        # self.textEditBar3 = QTextEdit(self.tab_3)
+        # self.textEditBar3.setGeometry(QRect(0, 50, 801, 900))
+        # self.textEditBar3.setObjectName("textEdit")
+        # self.textEditBar3.setMaximumSize(QSize(1500, 500))
+        # self.textEditBar3.setReadOnly(1)
+        # self.textEditBar3.setStyleSheet('font-size: 12pt; font-family: Consolas;')
 
         self.tab_4 = QWidget()
         self.tab_4.setObjectName("tab_4")
@@ -121,15 +127,17 @@ class CodeEditor(QMainWindow):
         self.tableWidget_4.setGeometry(QRect(0, 0, 1300, 600))
         self.tableWidget_4.setObjectName("tableWidget_4")
         self.tableWidget_4.setColumnCount(3)
-        self.tableWidget_4.setRowCount(3)        
+        self.tableWidget_4.setRowCount(100)        
         self.tabWidget.addTab(self.tab_4, "")
+        self.tableWidget_4.setHorizontalHeaderLabels(['Номер', 'Значення', 'Тип'])
 
-        self.textEditBar4 = QTextEdit(self.tab_4)
-        self.textEditBar4.setGeometry(QRect(0, 50, 801, 900))
-        self.textEditBar4.setObjectName("textEdit")
-        self.textEditBar4.setMaximumSize(QSize(1500, 500))
-        self.textEditBar4.setReadOnly(1)
-        self.textEditBar4.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+
+        # self.textEditBar4 = QTextEdit(self.tab_4)
+        # self.textEditBar4.setGeometry(QRect(0, 50, 801, 900))
+        # self.textEditBar4.setObjectName("textEdit")
+        # self.textEditBar4.setMaximumSize(QSize(1500, 500))
+        # self.textEditBar4.setReadOnly(1)
+        # self.textEditBar4.setStyleSheet('font-size: 12pt; font-family: Consolas;')
 
 
         self.tab_5 = QWidget()
@@ -174,32 +182,54 @@ class CodeEditor(QMainWindow):
         self.tableWidget_7 = QTableWidget(self.tab_7)
         self.tableWidget_7.setGeometry(QRect(0, 0, 1300, 600))
         self.tableWidget_7.setObjectName("tableWidget_7")
-        self.tableWidget_7.setColumnCount(3)
-        self.tableWidget_7.setRowCount(3)       
+        self.tableWidget_7.setColumnCount(4)
+        self.tableWidget_7.setRowCount(100)  
         self.tabWidget.addTab(self.tab_7, "")
 
-        self.textEditBar7 = QTextEdit(self.tab_7)
-        self.textEditBar7.setGeometry(QRect(0, 50, 801, 900))
-        self.textEditBar7.setObjectName("textEdit")
-        self.textEditBar7.setMaximumSize(QSize(1500, 500))
-        self.textEditBar7.setReadOnly(1)
-        self.textEditBar7.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+        # self.textEditBar7 = QTextEdit(self.tab_7)
+        # self.textEditBar7.setGeometry(QRect(0, 50, 801, 900))
+        # self.textEditBar7.setObjectName("textEdit")
+        # self.textEditBar7.setMaximumSize(QSize(1500, 500))
+        # self.textEditBar7.setReadOnly(1)
+        # self.textEditBar7.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+        
+        self.header_7 = self.tableWidget_7.horizontalHeader()       
+        self.header_7.setSectionResizeMode(0, QHeaderView.Stretch)
+        self.header_7.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.header_7.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.header_7.setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        # self.table.setHorizontalHeaderLabels(['1', '2', '3', '4', '5'])
+        self.tableWidget_7.setHorizontalHeaderLabels(['Вход', 'Стек', 'Полиз', 'Действие'])
+
+
 
         self.tab_8 = QWidget()
         self.tab_8.setObjectName("tab_8")
         self.tableWidget_8 = QTableWidget(self.tab_8)
         self.tableWidget_8.setGeometry(QRect(0, 0, 1300, 600))
         self.tableWidget_8.setObjectName("tableWidget_8")
-        self.tableWidget_8.setColumnCount(3)
-        self.tableWidget_8.setRowCount(3)       
+        self.tableWidget_8.setColumnCount(4)
+        self.tableWidget_8.setRowCount(100)       
         self.tabWidget.addTab(self.tab_8, "")
 
-        self.textEditBar8 = QTextEdit(self.tab_8)
-        self.textEditBar8.setGeometry(QRect(0, 50, 801, 900))
-        self.textEditBar8.setObjectName("textEdit")
-        self.textEditBar8.setMaximumSize(QSize(1500, 500))
-        self.textEditBar8.setReadOnly(1)
-        self.textEditBar8.setStyleSheet('font-size: 12pt; font-family: Consolas;')
+        self.header_8 = self.tableWidget_8.horizontalHeader()       
+        self.header_8.setSectionResizeMode(0, QHeaderView.Stretch)
+        self.header_8.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.header_8.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.header_8.setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        # self.table.setHorizontalHeaderLabels(['1', '2', '3', '4', '5'])
+        self.tableWidget_8.setHorizontalHeaderLabels(['Стек', 'Текущий эллемент', 'Полиз', 'Действие'])
+        
+        # self.model_8 = QStandardItemModel()
+        # self.model_8.setHorizontalHeaderLabels(['Name', 'Age', 'Sex', 'Add'])
+        # self.tableWidget_8.setModel(self.model_8)
+
+        # self.textEditBar8 = QTextEdit(self.tab_8)
+        # self.textEditBar8.setGeometry(QRect(0, 50, 801, 900))
+        # self.textEditBar8.setObjectName("textEdit")
+        # self.textEditBar8.setMaximumSize(QSize(1500, 500))
+        # self.textEditBar8.setReadOnly(1)
+        # self.textEditBar8.setStyleSheet('font-size: 12pt; font-family: Consolas;')
 
 
 

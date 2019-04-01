@@ -4,7 +4,8 @@
 
 
 from PyQt5.QtWidgets import QPlainTextEdit,QDialog, QWidget, QVBoxLayout, QApplication, QFileDialog, QMessageBox, QHBoxLayout, \
-                         QFrame, QTextEdit, QToolBar, QComboBox, QLabel, QAction, QLineEdit, QToolButton, QMenu, QMainWindow,QTabWidget,QTableWidget,QPushButton
+                         QFrame, QTextEdit, QToolBar, QComboBox, QLabel, QAction, QLineEdit, QToolButton, QMenu, \
+                             QMainWindow,QTabWidget,QTableWidget,QPushButton,QTableWidgetItem
 from PyQt5.QtGui import QIcon, QPainter, QTextFormat, QColor, QTextCursor, QKeySequence, QClipboard, QTextCharFormat, QPalette
 from PyQt5.QtCore import Qt, QVariant, QRect, QDir, QFile, QFileInfo, QTextStream, QRegExp, QSettings,QSize, QObject,pyqtSlot,pyqtSignal
 
@@ -229,6 +230,42 @@ class GUILogic(QDialog):
 
 
             (t_lexemes,t_idns,t_constants) = lexer.run()
+
+            for key,lexeme in enumerate(t_constants):
+                print(lexeme)
+                self.app.tableWidget_4.setItem(key,0, QTableWidgetItem(str(lexeme.id)))
+                self.app.tableWidget_4.setItem(key,1, QTableWidgetItem(lexeme.name))
+                self.app.tableWidget_4.setItem(key,2, QTableWidgetItem(lexeme.type))
+                # self.app.tableWidget_4.setItem(lexeme.id,3, QTableWidgetItem(lexeme.line))
+
+            for key,lexeme in enumerate(t_idns):
+                print(lexeme)
+                self.app.tableWidget_3.setItem(key,0, QTableWidgetItem(str(lexeme.id)))
+                self.app.tableWidget_3.setItem(key,1, QTableWidgetItem(lexeme.name))
+                self.app.tableWidget_3.setItem(key,2, QTableWidgetItem(lexeme.type))
+                self.app.tableWidget_3.setItem(key,3, QTableWidgetItem(str(lexeme.line)))
+
+            for key,lexeme in enumerate(t_lexemes):
+
+                f1=f2=f3=""
+                if lexeme.code==LexicalAnalyzer.IDN_CODE:
+                    f1 = lexeme.fid
+                if lexeme.code==LexicalAnalyzer.CON_CODE:
+                    f2 = lexeme.fid
+                if lexeme.code==LexicalAnalyzer.LAB_CODE:
+                    f3 = lexeme.fid
+                # lexeme_table += lexeme_pattern.format(lexeme.id,lexeme.line,name,lexeme.code,f1,f2,f3
+
+                name = lexeme.name if lexeme.name!='\n' else '¶'
+                print(lexeme)
+                self.app.tableWidget_2.setItem(key,0, QTableWidgetItem(str(lexeme.id)))
+                self.app.tableWidget_2.setItem(key,1, QTableWidgetItem(str(lexeme.line)))
+                self.app.tableWidget_2.setItem(key,2, QTableWidgetItem(name))
+                self.app.tableWidget_2.setItem(key,3, QTableWidgetItem(str(lexeme.code)))
+                self.app.tableWidget_2.setItem(key,4, QTableWidgetItem(f1))
+                self.app.tableWidget_2.setItem(key,5, QTableWidgetItem(f2))
+                self.app.tableWidget_2.setItem(key,6, QTableWidgetItem(f3))
+
             # print("0000",t_lexemes)
             # print("11111",t_idns)
             # print("2222",t_constants)
@@ -305,9 +342,9 @@ class GUILogic(QDialog):
             # text2="".join(tablesToString(t_lexemes,t_idns,t_constants))
             ttt = makeTables(t_lexemes,t_idns,t_constants)
             # text2="".join(makeTables(t_lexemes,t_idns,t_constants))
-            self.app.textEditBar2.setText(ttt[0])
-            self.app.textEditBar3.setText(ttt[1])
-            self.app.textEditBar4.setText(ttt[2])
+            # self.app.textEditBar2.setText(ttt[0])
+            # self.app.textEditBar3.setText(ttt[1])
+            # self.app.textEditBar4.setText(ttt[2])
 
 
 
@@ -339,37 +376,114 @@ class GUILogic(QDialog):
             IDN_CODE = 100
             CON_CODE = 101
             LAB_CODE = 102
-            
+            it=-1
             while len(input):
                 #lexeme = input.pop(0)
                 lexeme = input[0]
                 # if lexeme.name=="(":
 
                 if lexeme.code==IDN_CODE or lexeme.code==CON_CODE:
+                    it+=1
+
                     output.append(lexeme)
                     input.pop(0)
                     print(lexeme.name,"на виход")
-                    self.app.textEditBar7.append(lexeme.name+"на виход")
+                    # self.app.textEditBar7.append(lexeme.name+"на виход")
 
+                    output_str=", ".join([i.name for i in output])
+                    input_str=", ".join([i.name for i in input])
+                    stack_str=", ".join([i.name for i in stack])
+                    print(input_str)
+                    print(stack_str)
+                    print(output_str)
+                    self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+                    self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+                    self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
+                    self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(lexeme.name+" на виход"))
                 else:
                     #if len(stack):
                     while len(stack) and not findPriority(lexeme) < findPriority(stack[-1]):
+                        it+=1
+
                         el = stack.pop()
                         print(el.name,"на виход со стека ")
-                        self.app.textEditBar7.append(el.name+"на виход со стека ")
+                        # self.app.textEditBar7.append(el.name+"на виход со стека ")
 
                         if el.name!="(":
                             output.append(el) 
-                            
+
+                        output_str=", ".join([i.name for i in output])
+                        input_str=", ".join([i.name for i in input])
+                        stack_str=", ".join([i.name for i in stack])
+                        print(input_str)
+                        print(stack_str)
+                        print(output_str)  
+
+                        self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+                        self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+                        self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
+                        self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(el.name+" на виход со стека "))
+                        # self.tableWidget_8.setItem(X,Y, QTableWidgetItem("TEXT"))
                     else:
+                        it+=1
+
                         input.pop(0)       
                         print(lexeme.name,"в стек ")  
-                        self.app.textEditBar7.append(lexeme.name+"в стек ")
+                        # self.app.textEditBar7.append(lexeme.name+"в стек ")
 
                         if lexeme.name!=")":
                             stack.append(lexeme)
-                            
-                    
+                
+                        output_str=", ".join([i.name for i in output])
+                        input_str=", ".join([i.name for i in input])
+                        stack_str=", ".join([i.name for i in stack])
+                        print(input_str)
+                        print(stack_str)
+                        print(output_str)
+                        self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+                        self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+                        self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
+                        self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(lexeme.name+" в стек "))
+            
+            while(len(stack)):
+                it+=1
+
+                el = stack.pop()
+                print(el.name,"на виход со стека ")
+                # self.app.textEditBar7.append(el.name+"на виход со стека ")
+
+                if el.name!="(":
+                    output.append(el) 
+
+                output_str=", ".join([i.name for i in output])
+                input_str=", ".join([i.name for i in input])
+                stack_str=", ".join([i.name for i in stack])
+                print(input_str)
+                print(stack_str)
+                print(output_str)  
+
+                self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+                self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+                self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
+                self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(el.name+" на виход со стека "))
+                # for i in output:
+                    # output_str+=""
+                # print(stack,output,input)     
+            
+            # output_str=", ".join([i.name for i in output])
+            # input_str=", ".join([i.name for i in input])
+            # stack_str=", ".join([i.name for i in stack])
+            # print(input_str)
+            # print(stack_str)
+            # print(output_str)
+            # self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+            # self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+            # self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
+            # self.tableWidget.setRowCount(4)
+            
+            # set column count
+            # self.tableWidget.setColumnCount(2)
+
 
             while len(stack):
                 el=stack.pop()
@@ -381,13 +495,31 @@ class GUILogic(QDialog):
             output2 = list(map(lambda lexeme: lexeme.name,output))
 
             print(output2)
+            # compute poliz 
             var_stack=[]
+
+            output_str=", ".join([i.name for i in output])
+            print(output_str)  
+
+            self.app.tableWidget_8.setItem(0,2, QTableWidgetItem(output_str))
+            self.app.tableWidget_8.setItem(0,1, QTableWidgetItem(output[0].name))
+
+            it2=0
             while len(output):
+                self.app.tableWidget_8.setItem(it2,0, QTableWidgetItem(input_str))
+                self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[0].name))
+
+                # self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+                self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
+                it2+=1
+
                 a = output[0]
                 if a.code==IDN_CODE:
                     val =  self.variables.get(a.name)
                     var_stack.append(val )
+                    self.app.tableWidget_8.setItem(it2-1,1, QTableWidgetItem(output[0].name+" = "+str(val)))
                     output.pop(0)
+
                 elif a.code==CON_CODE:
                     #val =  self.variables.get(a.name)
                     var_stack.append(a.name)
@@ -405,6 +537,29 @@ class GUILogic(QDialog):
                     var_stack.pop()
                     var_stack.pop()
                     var_stack.append(res)
+                    # it2+=1
+                    try:
+                        self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[0].name))
+                        self.app.tableWidget_8.setItem(it2,0, QTableWidgetItem(input_str))
+
+                        self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
+                    except IndexError:
+                        pass
+                # it2+=1
+
+                output_str=", ".join([i.name for i in output])
+                input_str=", ".join([str(i) for i in var_stack])
+                # stack_str=", ".join([i.name for i in stack])
+                print(input_str)
+                # print(stack_str)
+                print(output_str)  
+                self.app.tableWidget_8.setItem(it2,0, QTableWidgetItem(str(var_stack[0])))
+                # self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[it2].name))
+                # self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
+
+
+                # self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+                # self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(el.name+" на виход со стека "))
             print(var_stack)
                 # elif a.code==IDN_CODE or a.code==CON_CODE:
                 #     pas

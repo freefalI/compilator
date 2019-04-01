@@ -211,7 +211,7 @@ class GUILogic(QDialog):
 
         # text = 'asdfsadf'
         # text = "a* (b+4)/-2 * (1 + 1)\n"
-        text= self.app.editor.toPlainText()+"\n" #getText()
+        text= self.app.editor.toPlainText() #getText()
         print(text)
         lexer = LexicalAnalyzer(text)
         try:

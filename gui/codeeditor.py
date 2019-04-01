@@ -199,7 +199,7 @@ class CodeEditor(QMainWindow):
         self.header_7.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.header_7.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         # self.table.setHorizontalHeaderLabels(['1', '2', '3', '4', '5'])
-        self.tableWidget_7.setHorizontalHeaderLabels(['Вход', 'Стек', 'Полиз', 'Действие'])
+        self.tableWidget_7.setHorizontalHeaderLabels(['Полиз', 'Стек', 'Вход', 'Действие'])
 
 
 

@@ -396,54 +396,61 @@ class GUILogic(QDialog):
                     print(input_str)
                     print(stack_str)
                     print(output_str)
-                    self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+                    self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(input_str))
                     self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
-                    self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
+                    self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(output_str))
                     self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(lexeme.name+" на виход"))
+                
+                elif lexeme.name=="(":
+                    l = input.pop(0)   
+                    stack.append(l)
                 else:
                     #if len(stack):
-                    while len(stack) and not findPriority(lexeme) < findPriority(stack[-1]):
-                        it+=1
+                    while len(stack) and findPriority(stack[-1]) >= findPriority(lexeme):
+                            print("!!!!!!!!!!!!!",findPriority(stack[-1]),findPriority(lexeme))
+                            it+=1
 
-                        el = stack.pop()
-                        print(el.name,"на виход со стека ")
-                        # self.app.textEditBar7.append(el.name+"на виход со стека ")
+                            el = stack.pop()
+                            print(el.name,"на виход со стека ")
+                            # self.app.textEditBar7.append(el.name+"на виход со стека ")
 
-                        if el.name!="(":
-                            output.append(el) 
+                            if el.name!="(":
+                                output.append(el) 
 
-                        output_str=", ".join([i.name for i in output])
-                        input_str=", ".join([i.name for i in input])
-                        stack_str=", ".join([i.name for i in stack])
-                        print(input_str)
-                        print(stack_str)
-                        print(output_str)  
+                            output_str=", ".join([i.name for i in output])
+                            input_str=", ".join([i.name for i in input])
+                            stack_str=", ".join([i.name for i in stack])
+                            print(input_str)
+                            print(stack_str)
+                            print(output_str)  
 
-                        self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
-                        self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
-                        self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
-                        self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(el.name+" на виход со стека "))
-                        # self.tableWidget_8.setItem(X,Y, QTableWidgetItem("TEXT"))
+                            self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(input_str))
+                            self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
+                            self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(output_str))
+                            self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(el.name+" на виход со стека "))
+                            # self.tableWidget_8.setItem(X,Y, QTableWidgetItem("TEXT"))
+                            # continue
                     else:
                         it+=1
 
-                        input.pop(0)       
-                        print(lexeme.name,"в стек ")  
+                        l = input.pop(0)       
+                        print(l.name,"в стек ")  
                         # self.app.textEditBar7.append(lexeme.name+"в стек ")
 
-                        if lexeme.name!=")":
-                            stack.append(lexeme)
-                
+                        if l.name!=")":
+                            stack.append(l)
+                        else:
+                            stack.pop()
                         output_str=", ".join([i.name for i in output])
                         input_str=", ".join([i.name for i in input])
                         stack_str=", ".join([i.name for i in stack])
                         print(input_str)
                         print(stack_str)
                         print(output_str)
-                        self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+                        self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(input_str))
                         self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
-                        self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
-                        self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(lexeme.name+" в стек "))
+                        self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(output_str))
+                        self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(l.name+" в стек "))
             
             while(len(stack)):
                 it+=1
@@ -462,9 +469,9 @@ class GUILogic(QDialog):
                 print(stack_str)
                 print(output_str)  
 
-                self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(input_str))
+                self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(input_str))
                 self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
-                self.app.tableWidget_7.setItem(it,2, QTableWidgetItem(output_str))
+                self.app.tableWidget_7.setItem(it,0, QTableWidgetItem(output_str))
                 self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(el.name+" на виход со стека "))
                 # for i in output:
                     # output_str+=""

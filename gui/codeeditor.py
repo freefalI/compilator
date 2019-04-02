@@ -282,8 +282,6 @@ class CodeEditor(QMainWindow):
         self.compileButton.setMaximumSize(QSize(100, 200))
         
         
-
-
         # satus bar 
         self.textEditStatusBar = QTextEdit(self.tbf)
         self.textEditStatusBar.setGeometry(QRect(0, 50, 801, 101))

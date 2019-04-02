@@ -57,85 +57,10 @@ class GUILogic(QDialog):
 
     def analyze(self,parse_table,t_lexemes):
         self.dump_analysis_table(parse_table)
-        #------------------------------------------------------------------------
-        #   bild poliz
-        #------------------------------------------------------------------------
         poliz = self.build_poliz(t_lexemes)
-
         output=poliz
-        #------------------------------------------------------------------------
-        #   compute poliz
-        #------------------------------------------------------------------------
-        var_stack=[]
-
-        output_str=", ".join([i.name for i in output])
-        print(output_str)  
-
-        self.app.tableWidget_8.setItem(0,2, QTableWidgetItem(output_str))
-        self.app.tableWidget_8.setItem(0,1, QTableWidgetItem(output[0].name))
-
-        it2=0
-        while len(output):
-            # self.app.tableWidget_8.setItem(it2,0, QTableWidgetItem(input_str))
-            self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[0].name))
-
-            # self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
-            self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
-            it2+=1
-
-            a = output[0]
-            if a.code==LexicalAnalyzer.IDN_CODE:
-                val =  self.variables.get(a.name)
-                var_stack.append(val )
-                self.app.tableWidget_8.setItem(it2-1,1, QTableWidgetItem(output[0].name+" = "+str(val)))
-                output.pop(0)
-
-            elif a.code==LexicalAnalyzer.CON_CODE:
-                #val =  self.variables.get(a.name)
-                var_stack.append(a.name)
-                output.pop(0)
-            else:
-                action = output.pop(0).name
-                if action=="+":
-                    res = float(var_stack[-2])+ float(var_stack[-1])
-                elif action=="-":
-                    res = float(var_stack[-2])- float(var_stack[-1])
-                elif action=="*":
-                    res = float(var_stack[-2])* float(var_stack[-1])
-                elif action=="/":
-                    res = float(var_stack[-2])/ float(var_stack[-1])
-                var_stack.pop()
-                var_stack.pop()
-                var_stack.append(res)
-                # it2+=1
-                try:
-                    self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[0].name))
-                    self.app.tableWidget_8.setItem(it2,0, QTableWidgetItem(input_str))
-
-                    self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
-                except IndexError:
-                    pass
-            # it2+=1
-
-            output_str=", ".join([i.name for i in output])
-            input_str=", ".join([str(i) for i in var_stack])
-            # stack_str=", ".join([i.name for i in stack])
-            print(input_str)
-            # print(stack_str)
-            print(output_str)  
-            self.app.tableWidget_8.setItem(it2,0, QTableWidgetItem(str(var_stack[0])))
-            # self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[it2].name))
-            # self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
-
-
-            # self.app.tableWidget_7.setItem(it,1, QTableWidgetItem(stack_str))
-            # self.app.tableWidget_7.setItem(it,3, QTableWidgetItem(el.name+" на виход со стека "))
-        print(var_stack)
-            # elif a.code==IDN_CODE or a.code==CON_CODE:
-            #     pas
-
-        self.app.textEditStatusBar.setText("success\n"+str(var_stack[0]))
-   
+        result = self.compute_poliz(output)
+        self.app.textEditStatusBar.setText("success\n"+result)
 
     def dump_tables(self,t_lexemes,t_idns,t_constants):
         for key,lexeme in enumerate(t_constants):
@@ -277,7 +202,6 @@ class GUILogic(QDialog):
             except KeyError:
                 pass
 
-
     def dump_poliz_building_step(self,widget,iteration,input,output,stack,message=""):
         it=iteration
         output_str=", ".join([i.name for i in output])
@@ -287,7 +211,6 @@ class GUILogic(QDialog):
         widget.setItem(it,1, QTableWidgetItem(stack_str))
         widget.setItem(it,0, QTableWidgetItem(output_str))
         widget.setItem(it,3, QTableWidgetItem(message))
-
 
     def build_poliz(self,t_lexemes):
         def findPriority(lexeme):
@@ -310,29 +233,22 @@ class GUILogic(QDialog):
                 message=lexeme.name+" на виход"
                 self.dump_poliz_building_step(self.app.tableWidget_7,it,input,output,stack,message)
         
-        
             elif lexeme.name=="(":
-                l = input.pop(0)   
-                stack.append(l)
+                el = input.pop(0)   
+                stack.append(el)
             else:
                 #if len(stack):
                 while len(stack) and findPriority(stack[-1]) >= findPriority(lexeme):
-                        # print("!!!!!!!!!!!!!",findPriority(stack[-1]),findPriority(lexeme))
-                        it+=1
-
-                        el = stack.pop()
-
-                        if el.name!="(":
-                            output.append(el) 
-
-                        message=el.name+" на виход со стека "
-                        self.dump_poliz_building_step(self.app.tableWidget_7,it,input,output,stack,message)
-
+                    # print("!!!!!!!!!!!!!",findPriority(stack[-1]),findPriority(lexeme))
+                    it+=1
+                    el = stack.pop()
+                    if el.name!="(":
+                        output.append(el) 
+                    message=el.name+" на виход со стека "
+                    self.dump_poliz_building_step(self.app.tableWidget_7,it,input,output,stack,message)
                 else:
                     it+=1
-
                     l = input.pop(0)       
-
                     if l.name!=")":
                         stack.append(l)
                     else:
@@ -343,10 +259,8 @@ class GUILogic(QDialog):
         while(len(stack)):
             it+=1
             el = stack.pop()
-
             if el.name!="(":
                 output.append(el) 
-
             message=el.name+" на виход со стека "
             self.dump_poliz_building_step(self.app.tableWidget_7,it,input,output,stack,message)
 
@@ -354,3 +268,48 @@ class GUILogic(QDialog):
         print(output2)
 
         return output
+
+    def compute_poliz(self,output):
+        var_stack=[]
+
+        output_str=", ".join([i.name for i in output])
+        self.app.tableWidget_8.setItem(0,2, QTableWidgetItem(output_str))
+        self.app.tableWidget_8.setItem(0,1, QTableWidgetItem(output[0].name))
+
+        it2=0
+        while len(output):
+            self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[0].name))
+            self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
+            it2+=1
+
+            a = output[0]
+            if a.code==LexicalAnalyzer.IDN_CODE:
+                val =  self.variables.get(a.name)
+                var_stack.append(val )
+                self.app.tableWidget_8.setItem(it2-1,1, QTableWidgetItem(output[0].name+" = "+str(val)))
+                output.pop(0)
+            elif a.code==LexicalAnalyzer.CON_CODE:
+                var_stack.append(a.name)
+                output.pop(0)
+            else:
+                action = output.pop(0).name
+                if action=="+":
+                    res = float(var_stack[-2])+ float(var_stack[-1])
+                elif action=="-":
+                    res = float(var_stack[-2])- float(var_stack[-1])
+                elif action=="*":
+                    res = float(var_stack[-2])* float(var_stack[-1])
+                elif action=="/":
+                    res = float(var_stack[-2])/ float(var_stack[-1])
+                var_stack.pop()
+                var_stack.pop()
+                var_stack.append(res)
+                try:
+                    self.app.tableWidget_8.setItem(it2,1, QTableWidgetItem(output[0].name))
+                    self.app.tableWidget_8.setItem(it2,2, QTableWidgetItem(output_str))
+                except IndexError:
+                    pass
+            output_str=", ".join([i.name for i in output])
+            input_str=", ".join([str(i) for i in var_stack])
+            self.app.tableWidget_8.setItem(it2,0, QTableWidgetItem(input_str))
+        return str(var_stack[0])

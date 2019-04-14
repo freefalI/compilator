@@ -29,3 +29,6 @@ class NoEndOfProgramSymbolException(TranslatorException):
 
 class SyntaxException(TranslatorException):
     pass
+
+class BuildException(TranslatorException):
+    pass

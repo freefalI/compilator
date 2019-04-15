@@ -72,7 +72,7 @@ class GUILogic(QDialog):
         super(GUILogic, self).__init__()
         # self.tableMaker = RelationTableMaker(grammar.grammar)
         self.priority_table = [["("], [")", "+", "-"], ["*", "/"]]
-
+        self.line=-1
     def make_connection(self, app):
         self.app = app
         # self.dump_relation_table()
@@ -106,6 +106,7 @@ class GUILogic(QDialog):
            
             print("END OF COMPILING")
             
+          
 
         except TranslatorException as ex:
             print(ex)
@@ -118,12 +119,21 @@ class GUILogic(QDialog):
         self.labels={}
         self.label_count=1
         self.app.textEditStatusBar.setText("syntax analysis successful" )
-        poliz = self.build_poliz()
+        poliz = self.build_poliz(self.t_lexemes)
         #output = poliz
 
         #result = self.compute_poliz(output)
         #self.app.textEditStatusBar.setText("success\n" + result)
-        self.app.textEditStatusBar.append("poliz= "+poliz)
+        #self.app.textEditStatusBar.append("poliz= "+poliz)
+        print(poliz)
+        output=''
+        for i in poliz:
+            if isinstance(i,Lexeme):
+                output+=i.name+'  '
+            else:
+                output+=i+'  '
+        # stack_str = ", ".join([i.name for i in stack])
+        self.app.tableWidget_7.setItem(self.line+1, 0, QTableWidgetItem(output))
 
     def dump_tables(self):
         for key, lexeme in enumerate(self.t_constants):
@@ -277,25 +287,31 @@ class GUILogic(QDialog):
         self, widget, iteration, input, output, stack, message=""
     ):
         it = iteration
-        output_str = ", ".join([i.name for i in output])
-        input_str = ", ".join([i.name for i in input])
-        stack_str = ", ".join([i.name for i in stack])
-        widget.setItem(it, 2, QTableWidgetItem(input_str))
-        widget.setItem(it, 1, QTableWidgetItem(stack_str))
-        widget.setItem(it, 0, QTableWidgetItem(output_str))
-        widget.setItem(it, 3, QTableWidgetItem(message))
+        if len(message):
+            output_str = ", ".join([i.name for i in output])
+            input_str = ", ".join([i.name for i in input])
+            stack_str = ", ".join([i.name for i in stack])
+            widget.setItem(it, 2, QTableWidgetItem(input_str))
+            widget.setItem(it, 1, QTableWidgetItem(stack_str))
+            widget.setItem(it, 0, QTableWidgetItem(output_str))
+            widget.setItem(it, 3, QTableWidgetItem(message))
+        else:
+            widget.setItem(it, 0, QTableWidgetItem(output))
 
-    def build_poliz(self):
+    def build_poliz(self,lexemes,skip=True):
         i=0
-        while self.t_lexemes[i].name !="{":
-            i+=1
-            continue
-        i+=2   
-        self.poliz=[]
+        
+        if skip:
+            while lexemes[i].name !="{":
+                i+=1
+                continue
+            i+=2  
+
+        full_poliz=[]
 
         while True:
             try:
-                l = self.t_lexemes[i]
+                l = lexemes[i]
             except IndexError:
                 break  
             #print(l)
@@ -307,45 +323,89 @@ class GUILogic(QDialog):
                 'goto': self.build_goto_poliz
             }
             if cases.get(l.name):
-                lexemes=[self.t_lexemes[i]]
+                lexemes2=[lexemes[i]]
                 print(cases.get(l.name))
-                while self.t_lexemes[i].code!=15:
-                    i+=1
-                    lexemes.append(self.t_lexemes[i])
-                    continue
-                lexemes.pop()    
-                cases.get(l.name)(lexemes)
+                if skip:
+                    while lexemes[i].code!=15:
+                        i+=1
+                        lexemes2.append(lexemes[i])
+                        continue
+                    lexemes2.pop()  
+                else:
+                    lexemes2.pop()
+                    lexemes2.extend(lexemes)
+                    # lexemes2.pop()    
+                poliz = cases.get(l.name)(lexemes2)
                 print(123)
-                # print(poliz)
+                print(poliz)
                 print(123)
+                if skip:
+                    full_poliz.extend(poliz)
+                else:
+                    return poliz
                 #self.full_poliz.extend(poliz)
 
 
             elif l.code == LexicalAnalyzer.IDN_CODE:
-                lexemes=[self.t_lexemes[i]]
-               
-                while self.t_lexemes[i].code!=15:
-                    i+=1
-                    lexemes.append(self.t_lexemes[i])
-                    continue
-                lexemes.pop()    
-                self.build_assignment_poliz(lexemes)
+                lexemes2=[lexemes[i]]
+                if skip:
+                    while lexemes[i].code!=15:
+                        i+=1
+                        lexemes2.append(lexemes[i])
+                        continue
+                    lexemes2.pop()   
+                else:
+                    lexemes2.pop()
+
+                    lexemes2.extend(lexemes)
+                    # lexemes2.pop()    
+                ternar=False
+                for x in lexemes2:
+                    if x.name=="?":
+                        ternar=True
+                if ternar:
+                    poliz=self.build_assignment_poliz_ternar(lexemes2)
+                else:
+                    poliz=self.build_assignment_poliz(lexemes2)
+                print(123)
+                print(poliz)
+                print(123)
+                if skip:
+                    full_poliz.extend(poliz)
+                else:
+                    return poliz
+                
 
 
             elif l.code == LexicalAnalyzer.LAB_CODE:
-                lexemes=[self.t_lexemes[i]]
-               
-                while self.t_lexemes[i].code!=15:
-                    i+=1
-                    lexemes.append(self.t_lexemes[i])
-                    continue
-                lexemes.pop()    
-                self.build_label_point_poliz(lexemes)
+                lexemes2=[lexemes[i]]
+                if skip:
+                    while self.t_lexemes[i].code!=15:
+                        i+=1
+                        lexemes2.append(lexemes[i])
+                        continue
+                    lexemes2.pop()   
+                else:
+                    lexemes2.pop()
+
+                    lexemes2.extend(lexemes)
+                    # lexemes2.pop()     
+                poliz = self.build_label_point_poliz(lexemes2)
+                print(123)
+                print(poliz)
+                print(123)
+                if skip:
+                    full_poliz.extend(poliz)
+                else:
+                    return poliz
+
+
 
             elif l.name=="}":  
                 break
             else:
-                raise BuildException
+                if skip:
+                    raise BuildException
 
             # if l.name in ["int","float","label"]:
                 # print('definition')
@@ -420,155 +480,294 @@ class GUILogic(QDialog):
         # print(output2)
 
         # return output
-        return '123'
+        return full_poliz
+    def print(self,lexemes):
+        for i in lexemes:
+            print("{0:10} {0:10} ".format(i.name,i.code))
     def build_cout_poliz(self,lexemess):
-        print(lexemess)
+        self.print(lexemess)
         lexemes=lexemess[:]
         result=[]
         cout=lexemes.pop(0)
         for key,i in enumerate(lexemes):
-            if key%2=0:
+            if key%2==1:
                 result.append(i)
                 result.append("PRINT")
-
+        output=''
+        for i in result:
+            if isinstance(i,Lexeme):
+                output+=i.name+','
+            else:
+                output+=i+','
+        self.line += 1
+        self.dump_poliz_building_step(
+                        self.app.tableWidget_7, self.line, '', output, '', ''
+                    )
+        return result
         # lexemes=lexemess[:]
         # result=[]
         # label = lexemes.pop()
         # result.append(label.name + "БП")
 
     def build_cin_poliz(self,lexemess):
-        print(lexemess)
+        self.print(lexemess)
         lexemes=lexemess[:]
         result=[]
         cout=lexemes.pop(0)
         for key,i in enumerate(lexemes):
-            if key%2=0:
+            if key%2==1:
                 result.append(i)
                 result.append("READ")
-        
+
+        self.line += 1
+        output=''
+        for i in result:
+            if isinstance(i,Lexeme):
+                output+=i.name+','
+            else:
+                output+=i+','
+
+        self.dump_poliz_building_step(
+                        self.app.tableWidget_7, self.line, '', output, '', ''
+                    )
+        return result
+    def build_condition_poliz(self,lexemess):
+        self.print(lexemess)
+        lexemes=lexemess[:]
+        result=[]
+        expr1=[]
+        expr2=[]
+        flag=False
+        for key,i in enumerate(lexemes):
+            if i.code >=20 and i.code <=25:
+                flag=True
+                cond_op_index=key
+                continue
+            if not flag:
+                expr1.append(i)
+            else:
+                expr2.append(i)
+
+        poliz1 = self.build_arifmetic_expression_poliz(expr1)
+        poliz2 = self.build_arifmetic_expression_poliz(expr2)
+
+        print(poliz1)
+        print(poliz2)
+        result.extend(poliz1)
+        result.extend(poliz2)
+        result.append(lexemes[cond_op_index])
+        # print(result)
+        output=''
+        for i in result:
+            if isinstance(i,Lexeme):
+                output+=i.name+','
+            else:
+                output+=i+','
+        self.line += 1
+        self.dump_poliz_building_step(
+                        self.app.tableWidget_7, self.line, '', output, '', ''
+                    )
+
+
+        return result
 
     def build_if_poliz(self,lexemess):
-        print(lexemess)
+        self.print(lexemess)
         lexemes=lexemess[:]
         result=[]
         lexemes.pop(0)
-        a = lexemes.pop(0)
-        b = lexemes.pop(0)
-        c = lexemes.pop(0)
-        result.append(a)
-        result.append(c)
-        result.append(b)
+        cond=[]
+        for i in lexemes[:]:
+            if i.name=="then":
+                break
+            cond.append(i)
+            # lexemes.pop(0)
+        cond_poliz = self.build_condition_poliz(cond)
+
+        
         label = lexemes.pop()
+        result.extend(cond_poliz)
         # self.labels.update({"m"+str(self.label_count+1):true})
         result.append("m УПХ")
         # result.append(label)
-        result.append(label.name + "БП")
+        result.append(label.name + " БП")
         result.append("m:")
+        self.line += 1
+        output=''
+        for i in result:
+            if isinstance(i,Lexeme):
+                output+=i.name+','
+            else:
+                output+=i+','
+        self.dump_poliz_building_step(
+                        self.app.tableWidget_7, self.line, '', output, '', ''
+                    )
+
+        return result
     def build_for_poliz(self,lexemess):
-       
+        lexemes=lexemess[:]
+        lexemes.pop(0)
+        # a = a>5 ? 4-4 : 25
+        index1=0# index of by
+        index2=0# index of while
+        index3=0# index of do
+
+        for key,i in enumerate(lexemes):
+            if i.name=="by":
+                index1=key
+            if i.name=="while":
+                index2=key
+            if i.name=="do":
+                index3=key
+
+        expr1=lexemes[0:index1]
+        expr2=lexemes[index1+1:index2]
+        cond=lexemes[index2+1:index3]
+        op=lexemes[index3+1:]
+
+        poliz_cond=self.build_condition_poliz(cond)
+        poliz_expr1=self.build_arifmetic_expression_poliz(expr1)
+        poliz_expr2=self.build_arifmetic_expression_poliz(expr2)
+        poliz_op = self.build_poliz(op,False)
+        # poliz_op = "123"
+
+        var=lexemes[0]
+        result=[]
+        result.append(var)
+        result.extend(poliz_expr1)
+        result.append("rj+1")
+        result.append("=")
+        result.append("mi:")
+        result.append("rj+1")
+        result.extend(poliz_expr2)
+        result.append("=")
+        result.append("rj")
+        result.append("0")
+        result.append("=")
+        result.append("mi+1 УПХ")
+        result.append(var)
+        result.append(var)
+        result.append("rj+1")
+        result.append("+")
+        result.append("=")
+        result.append("mi+1:")
+        result.append("rj")
+        result.append("0")
+        result.append("=")
+        result.extend(poliz_cond)
+        result.append("mi+2 УПХ")
+        result.extend(poliz_op)
+        result.append("mi БП")
+        result.append("mi+2:")
+        self.line += 1
+        output=''
+        for i in result:
+            if isinstance(i,Lexeme):
+                output+=i.name+','
+            else:
+                output+=i+','
+        self.dump_poliz_building_step(
+                        self.app.tableWidget_7, self.line, '', output, '', ''
+                    )
+        return result
 
     def build_goto_poliz(self,lexemess):
-        print(lexemess)
+        self.print(lexemess)
         lexemes=lexemess[:]
         result=[]
         label = lexemes.pop()
-        result.append(label.name + "БП")
+        result.append(label.name + " БП")
+        return result
+    def build_assignment_poliz_ternar(self,lexemess):
+        self.print(lexemess)
+       
+        lexemes=lexemess[:]
+        result=[lexemes.pop(0)]
+        assign = lexemes.pop(0)
+        # a = a>5 ? 4-4 : 25
+        index1=0# index of ?
+        index2=0# index of :
 
+        for key,i in enumerate(lexemes):
+            if i.name=="?":
+                index1=key
+            if i.name==":":
+                index2=key
+        cond=lexemes[0:index1]
+        expr1=lexemes[index1+1:index2]
+        expr2=lexemes[index2+1:]
+
+        poliz_cond=self.build_condition_poliz(cond)
+        poliz_expr1=self.build_arifmetic_expression_poliz(expr1)
+        poliz_expr2=self.build_arifmetic_expression_poliz(expr2)
+
+        result.extend(poliz_cond)
+        result.append("m1 упх")
+        result.extend(poliz_expr1)
+        result.append("m2 БП")
+        result.append("m1:")
+        result.extend(poliz_expr2)
+        result.append("m2:")
+        result.append(assign)
+        
+        return result
+        
 
     def build_assignment_poliz(self,lexemess):
-        print(lexemess)
+        self.print(lexemess)
         lexemes=lexemess[:]
-        def findPriority(lexeme):
-            for key, i in enumerate(self.priority_table):
-                if lexeme.name in i:
-                    return key
-            return None
         result=[lexemes.pop(0)]
         assign = lexemes.pop(0)
 
-        input = lexemes
-        stack = []
-        output = []
-        it = -1
-        while len(input):
-            lexeme = input[0]
-
-            if (
-                lexeme.code == LexicalAnalyzer.IDN_CODE
-                or lexeme.code == LexicalAnalyzer.CON_CODE
-            ):
-                it += 1
-                output.append(lexeme)
-                input.pop(0)
-                message = lexeme.name + " на виход"
-                self.dump_poliz_building_step(
-                    self.app.tableWidget_7, it, input, output, stack, message
-                )
-
-            elif lexeme.name == "(":
-                el = input.pop(0)
-                stack.append(el)
-            else:
-                # if len(stack):
-                while len(stack) and findPriority(stack[-1]) >= findPriority(lexeme):
-                    # print("!!!!!!!!!!!!!",findPriority(stack[-1]),findPriority(lexeme))
-                    it += 1
-                    el = stack.pop()
-                    if el.name != "(":
-                        output.append(el)
-                    message = el.name + " на виход со стека "
-                    self.dump_poliz_building_step(
-                        self.app.tableWidget_7, it, input, output, stack, message
-                    )
-                else:
-                    it += 1
-                    l = input.pop(0)
-                    if l.name != ")":
-                        stack.append(l)
-                    else:
-                        stack.pop()
-                    message = l.name + " в стек "
-                    self.dump_poliz_building_step(
-                        self.app.tableWidget_7, it, input, output, stack, message
-                    )
-
-        while len(stack):
-            it += 1
-            el = stack.pop()
-            if el.name != "(":
-                output.append(el)
-            message = el.name + " на виход со стека "
-            self.dump_poliz_building_step(
-                self.app.tableWidget_7, it, input, output, stack, message
-            )
-        result.extend(output)
+        poliz = self.build_arifmetic_expression_poliz(lexemes)
+        result.extend(poliz)
         result.append(assign)
-        output2 = list(map(lambda lexeme: lexeme.name, output))
-        print(output2)
+       
+        self.line += 1
+        output=''
+        for i in result:
+            if isinstance(i,Lexeme):
+                output+=i.name+','
+            else:
+                output+=i+','
+        self.dump_poliz_building_step(
+                        self.app.tableWidget_7, self.line, '', output, '', ''
+                    )
 
         return result
 
 
-
-
     def build_label_point_poliz(self,lexemess):
-        print(lexemess)
+        self.print(lexemess)
         lexemes=lexemess[:]
         result=[]
         label = lexemes.pop(0)
         result.append(label.name + ":")
 
-    def build_arifmetic_expression_poliz(self):
+        self.line += 1
+        output=''
+        for i in result:
+            if isinstance(i,Lexeme):
+                output+=i.name+','
+            else:
+                output+=i+','
+        self.dump_poliz_building_step(
+                        self.app.tableWidget_7, self.line, '', output, '', ''
+                    )
+        return result
+
+    def build_arifmetic_expression_poliz(self,lexemess):
         def findPriority(lexeme):
             for key, i in enumerate(self.priority_table):
                 if lexeme.name in i:
                     return key
             return None
 
-        input = self.t_lexemes
+        input = lexemess[:]
         stack = []
         output = []
-        it = -1
+        # it = -1
+        self.line+=1
         while len(input):
             lexeme = input[0]
 
@@ -576,12 +775,12 @@ class GUILogic(QDialog):
                 lexeme.code == LexicalAnalyzer.IDN_CODE
                 or lexeme.code == LexicalAnalyzer.CON_CODE
             ):
-                it += 1
+                self.line += 1
                 output.append(lexeme)
                 input.pop(0)
                 message = lexeme.name + " на виход"
                 self.dump_poliz_building_step(
-                    self.app.tableWidget_7, it, input, output, stack, message
+                    self.app.tableWidget_7, self.line, input, output, stack, message
                 )
 
             elif lexeme.name == "(":
@@ -591,16 +790,16 @@ class GUILogic(QDialog):
                 # if len(stack):
                 while len(stack) and findPriority(stack[-1]) >= findPriority(lexeme):
                     # print("!!!!!!!!!!!!!",findPriority(stack[-1]),findPriority(lexeme))
-                    it += 1
+                    self.line += 1
                     el = stack.pop()
                     if el.name != "(":
                         output.append(el)
                     message = el.name + " на виход со стека "
                     self.dump_poliz_building_step(
-                        self.app.tableWidget_7, it, input, output, stack, message
+                        self.app.tableWidget_7, self.line, input, output, stack, message
                     )
                 else:
-                    it += 1
+                    self.line += 1
                     l = input.pop(0)
                     if l.name != ")":
                         stack.append(l)
@@ -608,22 +807,22 @@ class GUILogic(QDialog):
                         stack.pop()
                     message = l.name + " в стек "
                     self.dump_poliz_building_step(
-                        self.app.tableWidget_7, it, input, output, stack, message
+                        self.app.tableWidget_7, self.line, input, output, stack, message
                     )
 
         while len(stack):
-            it += 1
+            self.line += 1
             el = stack.pop()
             if el.name != "(":
                 output.append(el)
             message = el.name + " на виход со стека "
             self.dump_poliz_building_step(
-                self.app.tableWidget_7, it, input, output, stack, message
+                self.app.tableWidget_7, self.line, input, output, stack, message
             )
 
         output2 = list(map(lambda lexeme: lexeme.name, output))
         print(output2)
-
+        print(output)
         return output
 
     def compute_poliz(self, output):

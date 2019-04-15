@@ -246,7 +246,7 @@ class CodeEditor(QMainWindow):
         self.tableWidget_7.setGeometry(QRect(0, 0, 1300, 600))
         self.tableWidget_7.setObjectName("tableWidget_7")
         self.tableWidget_7.setColumnCount(4)
-        self.tableWidget_7.setRowCount(100)
+        self.tableWidget_7.setRowCount(1000)
         self.tabWidget.addTab(self.tab_7, "")
 
         # self.textEditBar7 = QTextEdit(self.tab_7)

@@ -12,5 +12,6 @@ label label1,label2{
     label2: 
     for a = 1 by 1 while a < 10 do cout<<a 
     c= a* (b+4)/-2 * (1 + 1) +500
+			c = 5>2? -15.6 : -89
 }
-c = 5>2? -15.6 : -89
+

@@ -30,11 +30,13 @@ class Lexeme:
         self.code=code
         self.fid=fid
     def __repr__(self):
-        res = '(Lex : '
-        res +='id = {:5}'.format(self.id) 
-        res +='; line = {:5}'.format(self.line) 
-        res +='; name = {:>10}'.format(self.name if self.name!='\n' else '¶') 
-        res +='; code = {:10}'.format(self.code) if self.code else ''
-        res +='; fid = {:>10}'.format(self.fid) if self.fid else ''
-        return res+')'
+        # res = '(Lex : '
+        # res +='id = {:5}'.format(self.id) 
+        # res +='; line = {:5}'.format(self.line) 
+        # res +='; name = {:>10}'.format(self.name if self.name!='\n' else '¶') 
+        # res +='; code = {:10}'.format(self.code) if self.code else ''
+        # res +='; fid = {:>10}'.format(self.fid) if self.fid else ''
+        # return res+')'
+
+        return ("{0:10} {0:10} ".format(self.name,self.code))
         # return json.dumps(self, default=lambda o: o.__dict__)

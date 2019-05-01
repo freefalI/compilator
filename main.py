@@ -19,7 +19,6 @@ from PyQt5.QtWidgets import (
     QMenu,
     QMainWindow,
     QTabWidget,
-    QTableWidget,
     QPushButton,
 )
 from PyQt5.QtGui import (

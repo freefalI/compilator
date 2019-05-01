@@ -278,7 +278,7 @@ class CodeEditor(QMainWindow):
         self.header_8 = self.tableWidget_8.horizontalHeader()
         self.header_8.setSectionResizeMode(0, QHeaderView.Stretch)
         self.header_8.setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        self.header_8.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.header_8.setSectionResizeMode(2, QHeaderView.Stretch)
         self.header_8.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         # self.table.setHorizontalHeaderLabels(['1', '2', '3', '4', '5'])
         self.tableWidget_8.setHorizontalHeaderLabels(

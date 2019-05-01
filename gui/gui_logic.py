@@ -23,6 +23,7 @@ from PyQt5.QtWidgets import (
     QTableWidget,
     QPushButton,
     QTableWidgetItem,
+    QInputDialog
 )
 from PyQt5.QtGui import (
     QIcon,
@@ -114,6 +115,14 @@ class GUILogic(QDialog):
 
     def analyze(self):
         #self.dump_analysis_table(parse_table)
+        self.line=-1
+
+        self.app.tableWidget_2.clearContents()
+        self.app.tableWidget_3.clearContents()
+        self.app.tableWidget_4.clearContents()
+        self.app.tableWidget_7.clearContents()
+        self.app.tableWidget_8.clearContents()
+
         self.variables_values={}
         self.full_poliz=[]
         self.labels={}
@@ -122,7 +131,7 @@ class GUILogic(QDialog):
         poliz = self.build_poliz(self.t_lexemes)
         #output = poliz
 
-        #result = self.compute_poliz(output)
+        #result = 
         #self.app.textEditStatusBar.setText("success\n" + result)
         #self.app.textEditStatusBar.append("poliz= "+poliz)
         print(poliz)
@@ -134,6 +143,10 @@ class GUILogic(QDialog):
                 output+=i+'  '
         # stack_str = ", ".join([i.name for i in stack])
         self.app.tableWidget_7.setItem(self.line+1, 0, QTableWidgetItem(output))
+
+        self.compute_poliz2(poliz)
+
+
 
     def dump_tables(self):
         for key, lexeme in enumerate(self.t_constants):
@@ -702,7 +715,7 @@ class GUILogic(QDialog):
         poliz_expr2=self.build_arifmetic_expression_poliz(expr2)
 
         result.extend(poliz_cond)
-        result.append("m1 упх")
+        result.append("m1 УПХ")
         result.extend(poliz_expr1)
         result.append("m2 БП")
         result.append("m1:")
@@ -873,3 +886,235 @@ class GUILogic(QDialog):
             input_str = ", ".join([str(i) for i in var_stack])
             self.app.tableWidget_8.setItem(it2, 0, QTableWidgetItem(input_str))
         return str(var_stack[0])
+
+    def compute_poliz2(self, poliz):
+
+        self.cout=''
+        self.variables_values={}
+        self.labels_list={}
+        var_stack = []
+        for i in poliz:
+            print(i)
+        #return
+        output2 =[]
+        poliz2=[]
+        for i in poliz:
+            if isinstance(i,Lexeme):
+                # output2.append(i.name)
+                poliz2.append(i)
+            else:
+                # output2.append(i)
+                poliz2.append(Lexeme(None,None,name=i))
+        
+        poliz=poliz2        
+
+        poliz_str= ", ".join([i.name for i in poliz])
+
+        self.app.tableWidget_8.setItem(0, 2, QTableWidgetItem(poliz_str))
+        self.app.tableWidget_8.setItem(0, 1, QTableWidgetItem(poliz[0].name))
+
+        it2 = 0
+        while len(poliz):
+            self.app.tableWidget_8.setItem(it2, 1, QTableWidgetItem(poliz[0].name))
+            self.app.tableWidget_8.setItem(it2, 2, QTableWidgetItem(poliz_str))
+            it2 += 1
+
+            a = poliz[0]
+            if a.code == LexicalAnalyzer.IDN_CODE:
+                #val = self.variables.get(a.name)
+                # val = 25
+                var_stack.append(a)
+
+                val = self.variables_values.get(a.name,"undefined")
+
+                
+                self.app.tableWidget_8.setItem(
+                    it2 - 1, 1, QTableWidgetItem(poliz[0].name + " = " + str(val))
+                )
+                poliz.pop(0)
+            elif a.code == LexicalAnalyzer.CON_CODE:
+                var_stack.append(a.name)
+                poliz.pop(0)
+            elif "УПХ" in a.name:
+                cond_res = var_stack.pop()
+                if cond_res not  in [True,False]:
+                    raise RuntimeException("no bool in stack")
+                poliz.pop(0)
+                if cond_res==False:
+
+                    label = a.name.split()[0]
+                    found=False
+                        
+                    while len(poliz):
+                        l = poliz.pop(0)
+
+                        if l.name==label+":":
+                            found=True
+
+                            print("label "+label+" found")
+                            break
+                        
+                    
+                    if not found:
+                        raise NotFoundLabelRuntimeException("label "+label+" not found")
+
+                
+
+
+            elif "БП" in a.name:
+                label = a.name.split()[0]
+                poliz.pop(0)
+                found=False
+                while len(poliz):
+                    l = poliz.pop(0)
+                    
+                    if l.name==label+":":
+                        found=True
+                        print("label "+label+" found")
+                        break
+                    
+                if not  found:
+                    raise NotFoundLabelRuntimeException("label "+label+" not found")
+                
+                
+                
+
+
+
+
+            else:
+                action = poliz.pop(0).name
+                if action == "+":
+                    res = float(var_stack[-2]) + float(var_stack[-1])
+                    var_stack.pop()
+                    var_stack.pop()
+                    var_stack.append(res)
+                elif action == "-":
+                    res = float(var_stack[-2]) - float(var_stack[-1])
+                    var_stack.pop()
+                    var_stack.pop()
+                    var_stack.append(res)
+                elif action == "*":
+                    res = float(var_stack[-2]) * float(var_stack[-1])
+                    var_stack.pop()
+                    var_stack.pop()
+                    var_stack.append(res)
+                elif action == "/":
+                    res = float(var_stack[-2]) / float(var_stack[-1])
+                    var_stack.pop()
+                    var_stack.pop()
+                    var_stack.append(res)
+
+                elif action in [">","<",">=","<=","==","!="]:
+                    operand2 = var_stack.pop()
+                    operand1 = var_stack.pop()
+                    if isinstance(operand1,Lexeme):
+                        #operand1=operand1.name
+                        operand1 = float(self.variables_values.get(operand1.name,"undefined"))
+                    else:
+                        operand1=float(operand1)
+
+                    if isinstance(operand2,Lexeme):
+                        #operand2=operand2.name
+                        operand2 = float(self.variables_values.get(operand2.name,"undefined"))
+
+                    else:
+                        operand2=float(operand2)
+
+                    if action=="<":
+                        res = operand1 < operand2
+                    elif  action==">":
+                        res = operand1 > operand2
+                    elif  action=="<=":
+                        res = operand1 <= operand2
+                    elif  action==">=":
+                        res = operand1 >= operand2
+                    elif action=="==":
+                        res = operand1 == operand2
+                    elif action=="!=":
+                        res = operand1 != operand2
+
+
+                    var_stack.append(res)
+
+
+                elif action == "PRINT":
+
+
+                    var = var_stack.pop()
+                    #var_fid = int(var.fid)
+                    #idn = self.t_idns[var_fid-1]
+                    value = self.variables_values.get(var.name,"undefined")
+
+
+                    self.cout+=value+"\n"
+
+                elif action == "READ":
+                    var = var_stack.pop()
+                    var_fid = int(var.fid)
+                    idn = self.t_idns[var_fid-1]
+                    idn_type=idn.type
+
+                    if idn_type=="int":
+                        v, okPressed = QInputDialog.getInt(self, "Get integer",idn.name+":")
+                        # v, okPressed = QInputDialog.getInt(self, "Get integer",idn.name+":", 0, 0, 100, 1)
+                        if okPressed:
+                            print(v)
+                    elif idn_type=="float":
+                        # v, okPressed = QInputDialog.getDouble(self, "Get double",idn.name+":", 10.05, 0, 100, 10)
+                        v, okPressed = QInputDialog.getDouble(self, "Get double",idn.name+":",0.0,decimals=10)
+                        if okPressed:
+                            print(v)
+
+                    if not okPressed:
+                        raise RuntimeException("value of "+idn.name+" haven`t inputed correctly",var.line)
+
+                    self.variables_values.update({idn.name:str(v)})
+
+                elif action == "=":
+                    value = str(var_stack.pop())
+                    variable = var_stack.pop()
+                    value_type = ''
+
+                    if '.'  in value:
+                        value_type='float'
+                    else:
+                        value_type='int' 
+                    
+                    
+                    var_fid = int(variable.fid)
+                    idn = self.t_idns[var_fid-1]
+                    idn_type=idn.type
+
+                    if idn_type=="int":
+                        v = value.split('.')[0]
+                        self.variables_values.update({idn.name:v})
+                    else:
+                        self.variables_values.update({idn.name:value})
+                 
+                else:
+                    res='777777'        
+                #var_stack.pop()
+               
+                try:
+                    self.app.tableWidget_8.setItem(
+                        it2, 1, QTableWidgetItem(poliz[0].name)
+                    )
+                    self.app.tableWidget_8.setItem(it2, 2, QTableWidgetItem(poliz_str))
+                except IndexError:
+                    pass
+
+            # output2 =[]
+            # for i in poliz:
+            #     if isinstance(i,Lexeme):
+            #         output2.append(i.name)
+            #     else:
+            #         output2.append(i)
+            
+            poliz_str= ", ".join([i.name for i in poliz])
+
+            #poliz_str = ", ".join([i.name for i in output])
+            input_str = ", ".join([str(i) for i in var_stack])
+            self.app.tableWidget_8.setItem(it2, 0, QTableWidgetItem(input_str))
+        print(self.cout)
+        #return str(var_stack[0])

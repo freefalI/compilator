@@ -38,5 +38,6 @@ class Lexeme:
         # res +='; fid = {:>10}'.format(self.fid) if self.fid else ''
         # return res+')'
 
-        return ("{0:10} {0:10} ".format(self.name,self.code))
+        # return ("{0:10} {0:10} ".format(self.name,self.code))
+        return self.name
         # return json.dumps(self, default=lambda o: o.__dict__)

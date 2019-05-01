@@ -32,3 +32,9 @@ class SyntaxException(TranslatorException):
 
 class BuildException(TranslatorException):
     pass
+
+class RuntimeException(TranslatorException):
+    pass
+
+class NotFoundLabelRuntimeException(RuntimeException):
+    pass

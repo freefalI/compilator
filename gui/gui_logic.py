@@ -59,6 +59,7 @@ from compiler.LexicalAnalyzerOld import *
 # from SyntaxAnalyzer2 import *
 import compiler.transition_table
 import easygui
+import traceback
 
 # from compiler.AscendingAnalysis import RelationTableMaker
 import compiler.grammar as grammar
@@ -112,14 +113,14 @@ class GUILogic(QDialog):
         except TranslatorException as ex:
             print(ex)
             self.app.textEditStatusBar.setText(ex.__class__.__name__ + "\n" + str(ex))
+        except Exception as ex:
+            print(ex)
+            self.app.textEditStatusBar.setText( traceback.format_exc())
 
     def analyze(self):
         #self.dump_analysis_table(parse_table)
         self.line=-1
 
-        self.app.tableWidget_2.clearContents()
-        self.app.tableWidget_3.clearContents()
-        self.app.tableWidget_4.clearContents()
         self.app.tableWidget_7.clearContents()
         self.app.tableWidget_8.clearContents()
 
@@ -144,7 +145,7 @@ class GUILogic(QDialog):
         # stack_str = ", ".join([i.name for i in stack])
         self.app.tableWidget_7.setItem(self.line+1, 0, QTableWidgetItem(output))
 
-        self.compute_poliz2(poliz)
+        self.compute_poliz(poliz)
 
 
 
@@ -838,56 +839,9 @@ class GUILogic(QDialog):
         print(output)
         return output
 
-    def compute_poliz(self, output):
-        var_stack = []
 
-        output_str = ", ".join([i.name for i in output])
-        self.app.tableWidget_8.setItem(0, 2, QTableWidgetItem(output_str))
-        self.app.tableWidget_8.setItem(0, 1, QTableWidgetItem(output[0].name))
 
-        it2 = 0
-        while len(output):
-            self.app.tableWidget_8.setItem(it2, 1, QTableWidgetItem(output[0].name))
-            self.app.tableWidget_8.setItem(it2, 2, QTableWidgetItem(output_str))
-            it2 += 1
-
-            a = output[0]
-            if a.code == LexicalAnalyzer.IDN_CODE:
-                val = self.variables.get(a.name)
-                var_stack.append(val)
-                self.app.tableWidget_8.setItem(
-                    it2 - 1, 1, QTableWidgetItem(output[0].name + " = " + str(val))
-                )
-                output.pop(0)
-            elif a.code == LexicalAnalyzer.CON_CODE:
-                var_stack.append(a.name)
-                output.pop(0)
-            else:
-                action = output.pop(0).name
-                if action == "+":
-                    res = float(var_stack[-2]) + float(var_stack[-1])
-                elif action == "-":
-                    res = float(var_stack[-2]) - float(var_stack[-1])
-                elif action == "*":
-                    res = float(var_stack[-2]) * float(var_stack[-1])
-                elif action == "/":
-                    res = float(var_stack[-2]) / float(var_stack[-1])
-                var_stack.pop()
-                var_stack.pop()
-                var_stack.append(res)
-                try:
-                    self.app.tableWidget_8.setItem(
-                        it2, 1, QTableWidgetItem(output[0].name)
-                    )
-                    self.app.tableWidget_8.setItem(it2, 2, QTableWidgetItem(output_str))
-                except IndexError:
-                    pass
-            output_str = ", ".join([i.name for i in output])
-            input_str = ", ".join([str(i) for i in var_stack])
-            self.app.tableWidget_8.setItem(it2, 0, QTableWidgetItem(input_str))
-        return str(var_stack[0])
-
-    def compute_poliz2(self, poliz):
+    def compute_poliz(self, poliz):
 
         self.cout=''
         self.variables_values={}
@@ -941,25 +895,17 @@ class GUILogic(QDialog):
                     raise RuntimeException("no bool in stack")
                 poliz.pop(0)
                 if cond_res==False:
-
                     label = a.name.split()[0]
                     found=False
-                        
                     while len(poliz):
                         l = poliz.pop(0)
-
                         if l.name==label+":":
                             found=True
-
                             print("label "+label+" found")
                             break
                         
-                    
                     if not found:
                         raise NotFoundLabelRuntimeException("label "+label+" not found")
-
-                
-
 
             elif "БП" in a.name:
                 label = a.name.split()[0]
@@ -967,7 +913,6 @@ class GUILogic(QDialog):
                 found=False
                 while len(poliz):
                     l = poliz.pop(0)
-                    
                     if l.name==label+":":
                         found=True
                         print("label "+label+" found")
@@ -975,35 +920,36 @@ class GUILogic(QDialog):
                     
                 if not  found:
                     raise NotFoundLabelRuntimeException("label "+label+" not found")
-                
-                
-                
-
-
-
-
             else:
                 action = poliz.pop(0).name
-                if action == "+":
-                    res = float(var_stack[-2]) + float(var_stack[-1])
-                    var_stack.pop()
-                    var_stack.pop()
+                if action in ["+","-","*","/"]:
+                    operand2 = var_stack.pop()
+                    operand1 = var_stack.pop()
+
+                    if isinstance(operand1,Lexeme):
+                        #operand1=operand1.name
+                        operand1 = float(self.variables_values.get(operand1.name,"undefined"))
+                    else:
+                        operand1=float(operand1)
+
+                    if isinstance(operand2,Lexeme):
+                        #operand2=operand2.name
+                        operand2 = float(self.variables_values.get(operand2.name,"undefined"))
+
+                    else:
+                        operand2=float(operand2)
+
+                    if action=="+":
+                        res = operand1 + operand2
+                    elif  action=="-":
+                        res = operand1 - operand2
+                    elif  action=="*":
+                        res = operand1 * operand2
+                    elif  action=="/":
+                        res = operand1 / operand2
+                  
                     var_stack.append(res)
-                elif action == "-":
-                    res = float(var_stack[-2]) - float(var_stack[-1])
-                    var_stack.pop()
-                    var_stack.pop()
-                    var_stack.append(res)
-                elif action == "*":
-                    res = float(var_stack[-2]) * float(var_stack[-1])
-                    var_stack.pop()
-                    var_stack.pop()
-                    var_stack.append(res)
-                elif action == "/":
-                    res = float(var_stack[-2]) / float(var_stack[-1])
-                    var_stack.pop()
-                    var_stack.pop()
-                    var_stack.append(res)
+
 
                 elif action in [">","<",">=","<=","==","!="]:
                     operand2 = var_stack.pop()
@@ -1034,19 +980,12 @@ class GUILogic(QDialog):
                     elif action=="!=":
                         res = operand1 != operand2
 
-
                     var_stack.append(res)
 
 
                 elif action == "PRINT":
-
-
                     var = var_stack.pop()
-                    #var_fid = int(var.fid)
-                    #idn = self.t_idns[var_fid-1]
                     value = self.variables_values.get(var.name,"undefined")
-
-
                     self.cout+=value+"\n"
 
                 elif action == "READ":
@@ -1068,7 +1007,6 @@ class GUILogic(QDialog):
 
                     if not okPressed:
                         raise RuntimeException("value of "+idn.name+" haven`t inputed correctly",var.line)
-
                     self.variables_values.update({idn.name:str(v)})
 
                 elif action == "=":
@@ -1081,7 +1019,6 @@ class GUILogic(QDialog):
                     else:
                         value_type='int' 
                     
-                    
                     var_fid = int(variable.fid)
                     idn = self.t_idns[var_fid-1]
                     idn_type=idn.type
@@ -1093,9 +1030,8 @@ class GUILogic(QDialog):
                         self.variables_values.update({idn.name:value})
                  
                 else:
-                    res='777777'        
-                #var_stack.pop()
-               
+                    print("STRANGE LEXEME:",a)     
+
                 try:
                     self.app.tableWidget_8.setItem(
                         it2, 1, QTableWidgetItem(poliz[0].name)
@@ -1117,4 +1053,6 @@ class GUILogic(QDialog):
             input_str = ", ".join([str(i) for i in var_stack])
             self.app.tableWidget_8.setItem(it2, 0, QTableWidgetItem(input_str))
         print(self.cout)
+        self.app.textEditStatusBar.setText(self.cout )
+
         #return str(var_stack[0])

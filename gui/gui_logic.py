@@ -117,10 +117,10 @@ class GUILogic(QDialog):
 
         except TranslatorException as ex:
             print(ex)
-            self.app.textEditStatusBar.setText(ex.__class__.__name__ + "\n" + str(ex))
+            self.app.textEditStatusBar.append(ex.__class__.__name__ + "\n" + str(ex))
         except Exception as ex:
             print(ex)
-            self.app.textEditStatusBar.setText( traceback.format_exc())
+            self.app.textEditStatusBar.append( traceback.format_exc())
 
     def analyze(self):
         #self.dump_analysis_table(parse_table)
@@ -143,7 +143,20 @@ class GUILogic(QDialog):
                 poliz2.append(i)
             else:
                 # output2.append(i)
+                # if i=="c":
+                #     print(22)
+                # found=False
+                # for j in self.t_idns:
+                #     if i==j.name:
+                #         fid = j.id
+                #         found=True
+                #         break
+                # if found:
+                #     poliz2.append(Lexeme(None,None,name=i,fid=fid))
+
+                # else:
                 poliz2.append(Lexeme(None,None,name=i))
+
 
         poliz=poliz2
         self.poliz=poliz[:]
@@ -834,28 +847,30 @@ class GUILogic(QDialog):
                 stack.append(el)
             else:
                 # if len(stack):
-                while len(stack) and findPriority(stack[-1]) >= findPriority(lexeme):
-                    # print("!!!!!!!!!!!!!",findPriority(stack[-1]),findPriority(lexeme))
-                    self.line += 1
-                    el = stack.pop()
-                    if el.name != "(":
-                        output.append(el)
-                    message = el.name + " на виход со стека "
-                    self.dump_poliz_building_step(
-                        self.app.tableWidget_7, self.line, input, output, stack, message
-                    )
-                else:
-                    self.line += 1
-                    l = input.pop(0)
-                    if l.name != ")":
-                        stack.append(l)
+                try:
+                    while len(stack) and findPriority(stack[-1]) >= findPriority(lexeme):
+                        # print("!!!!!!!!!!!!!",findPriority(stack[-1]),findPriority(lexeme))
+                        self.line += 1
+                        el = stack.pop()
+                        if el.name != "(":
+                            output.append(el)
+                        message = el.name + " на виход со стека "
+                        self.dump_poliz_building_step(
+                            self.app.tableWidget_7, self.line, input, output, stack, message
+                        )
                     else:
-                        stack.pop()
-                    message = l.name + " в стек "
-                    self.dump_poliz_building_step(
-                        self.app.tableWidget_7, self.line, input, output, stack, message
-                    )
-
+                        self.line += 1
+                        l = input.pop(0)
+                        if l.name != ")":
+                            stack.append(l)
+                        else:
+                            stack.pop()
+                        message = l.name + " в стек "
+                        self.dump_poliz_building_step(
+                            self.app.tableWidget_7, self.line, input, output, stack, message
+                        )
+                except TypeError:
+                    raise BuildException("loop variable should be ar. expr contains only numbers or variable")
         while len(stack):
             self.line += 1
             el = stack.pop()
@@ -1036,7 +1051,9 @@ class GUILogic(QDialog):
                 elif action == "PRINT":
                     var = var_stack.pop()
                     value = self.variables_values.get(var.name,"undefined")
-                    self.cout+=value+"\n"
+                    # self.cout+=value+"\n"
+                    self.app.textEditStatusBar.append(value)
+                    print(value+"\n")
 
                 elif action == "READ":
                     var = var_stack.pop()
@@ -1061,10 +1078,19 @@ class GUILogic(QDialog):
 
                 elif action == "=":
                     value = str(var_stack.pop())
+                    for i in self.t_idns:
+                        if value==i.name:
+                            print(i)
+                            value=self.variables_values.get(i.name,"undefined")
+                            break
+                    
+                    # if isinstance(value,Lexeme):
+                        # value = self.variables_values.get(value.name,"undefined")
+
                     variable = var_stack.pop()
                     value_type = ''
 
-                    if '.'  in value:
+                    if '.'  in value:   
                         value_type='float'
                     else:
                         value_type='int' 
@@ -1080,7 +1106,7 @@ class GUILogic(QDialog):
                             self.variables_values.update({idn.name:v})
                         else:
                             self.variables_values.update({idn.name:value})
-                 
+                
                 else:
                     print("STRANGE LEXEME:",a)     
 
@@ -1104,7 +1130,7 @@ class GUILogic(QDialog):
             #poliz_str = ", ".join([i.name for i in output])
             input_str = ", ".join([str(i) for i in var_stack])
             self.app.tableWidget_8.setItem(it2, 0, QTableWidgetItem(input_str))
-        print(self.cout)
-        self.app.textEditStatusBar.setText(self.cout )
+        # print(self.cout)
+        
 
         #return str(var_stack[0])

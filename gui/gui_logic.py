@@ -93,9 +93,14 @@ class GUILogic(QDialog):
             self.t_lexemes = t_lexemes
             self.t_idns = t_idns
             self.t_constants = t_constants
+            self.app.tableWidget_2.clearContents()
+            self.app.tableWidget_3.clearContents()
+            self.app.tableWidget_4.clearContents()
 
             self.dump_tables()
             # sAn = SyntaxAnalyzer3(t_lexemes,t_idns,t_constants,self.tableMaker)
+
+         
 
             sAn = SyntaxAnalyzer2(
                 t_lexemes, t_idns, t_constants, transition_table
@@ -129,7 +134,19 @@ class GUILogic(QDialog):
         self.labels={}
         self.label_count=1
         self.app.textEditStatusBar.setText("syntax analysis successful" )
+        self.label_index=100
         poliz = self.build_poliz(self.t_lexemes)
+        poliz2=[]
+        for i in poliz:
+            if isinstance(i,Lexeme):
+                # output2.append(i.name)
+                poliz2.append(i)
+            else:
+                # output2.append(i)
+                poliz2.append(Lexeme(None,None,name=i))
+
+        poliz=poliz2
+        self.poliz=poliz[:]
         #output = poliz
 
         #result = 
@@ -144,9 +161,20 @@ class GUILogic(QDialog):
                 output+=i+'  '
         # stack_str = ", ".join([i.name for i in stack])
         self.app.tableWidget_7.setItem(self.line+1, 0, QTableWidgetItem(output))
-
+        self.find_labels(poliz)
         self.compute_poliz(poliz)
 
+    def find_labels(self,poliz):
+        self.lexemes_adresses=[]
+        for key,i in enumerate(poliz):
+            if isinstance(i, Lexeme):
+                if i.name[-1]==":":
+                    self.lexemes_adresses.append((i,key))
+            else:
+                if i[-1]==":":
+                    self.lexemes_adresses.append((i,key))
+            
+        print(888)
 
 
     def dump_tables(self):
@@ -619,6 +647,7 @@ class GUILogic(QDialog):
 
         return result
     def build_for_poliz(self,lexemess):
+        
         lexemes=lexemess[:]
         lexemes.pop(0)
         # a = a>5 ? 4-4 : 25
@@ -627,11 +656,11 @@ class GUILogic(QDialog):
         index3=0# index of do
 
         for key,i in enumerate(lexemes):
-            if i.name=="by":
+            if i.name=="by" and index1==0:
                 index1=key
-            if i.name=="while":
+            if i.name=="while" and index2==0:
                 index2=key
-            if i.name=="do":
+            if i.name=="do" and index3==0:
                 index3=key
 
         expr1=lexemes[0:index1]
@@ -647,32 +676,35 @@ class GUILogic(QDialog):
 
         var=lexemes[0]
         result=[]
-        result.append(var)
+        #result.append(var)
+        # result.append("for")
         result.extend(poliz_expr1)
-        result.append("rj+1")
+        result.append("rj")
+        result.append('number@1')
         result.append("=")
-        result.append("mi:")
+        result.append("m"+str(self.label_index)+":")
         result.append("rj+1")
         result.extend(poliz_expr2)
         result.append("=")
         result.append("rj")
-        result.append("0")
-        result.append("=")
-        result.append("mi+1 УПХ")
+        result.append("number@0")
+        result.append("==")
+        result.append("m"+str(self.label_index+1)+" УПХ")
         result.append(var)
         result.append(var)
         result.append("rj+1")
         result.append("+")
         result.append("=")
-        result.append("mi+1:")
+        result.append("m"+str(self.label_index+1)+":")
         result.append("rj")
-        result.append("0")
+        result.append("number@0")
         result.append("=")
         result.extend(poliz_cond)
-        result.append("mi+2 УПХ")
+        result.append("m"+str(self.label_index+2)+" УПХ")
         result.extend(poliz_op)
-        result.append("mi БП")
-        result.append("mi+2:")
+        result.append("m"+str(self.label_index)+" БП")
+        result.append("m"+str(self.label_index+2)+":")
+        self.label_index+=3
         self.line += 1
         output=''
         for i in result:
@@ -851,17 +883,7 @@ class GUILogic(QDialog):
             print(i)
         #return
         output2 =[]
-        poliz2=[]
-        for i in poliz:
-            if isinstance(i,Lexeme):
-                # output2.append(i.name)
-                poliz2.append(i)
-            else:
-                # output2.append(i)
-                poliz2.append(Lexeme(None,None,name=i))
-        
-        poliz=poliz2        
-
+      
         poliz_str= ", ".join([i.name for i in poliz])
 
         self.app.tableWidget_8.setItem(0, 2, QTableWidgetItem(poliz_str))
@@ -889,6 +911,10 @@ class GUILogic(QDialog):
             elif a.code == LexicalAnalyzer.CON_CODE:
                 var_stack.append(a.name)
                 poliz.pop(0)
+            elif 'number@' in a.name:
+                print('qqqqqqqqq')
+                var_stack.append(a.name.split('@')[1])
+                poliz.pop(0)
             elif "УПХ" in a.name:
                 cond_res = var_stack.pop()
                 if cond_res not  in [True,False]:
@@ -905,7 +931,7 @@ class GUILogic(QDialog):
                             break
                         
                     if not found:
-                        raise NotFoundLabelRuntimeException("label "+label+" not found")
+                        raise NotFoundLabelRuntimeException("1label "+label+" not found")
 
             elif "БП" in a.name:
                 label = a.name.split()[0]
@@ -919,7 +945,31 @@ class GUILogic(QDialog):
                         break
                     
                 if not  found:
-                    raise NotFoundLabelRuntimeException("label "+label+" not found")
+                    # print([i[0] for i in self.lexemes_adresses])
+                    index=None
+                    for i in self.lexemes_adresses:
+                        if label+":" ==i[0].name:
+                            index=i[1]
+                            print('label '+label+' before found')
+
+                    if index==None:
+                        raise NotFoundLabelRuntimeException("2label "+label+" not found")
+                    else:
+                        poliz = self.poliz[index:]
+                        print(poliz)
+
+            elif a.name=="for":
+                print('zzz')
+                #return
+                poliz.pop(0)
+                zpc = poliz[0]
+            
+            elif a.name[0]=="r":# and  a.name[1:].isdigit():
+                var_stack.append(a)
+                print(a)          
+                poliz.pop(0)
+                
+
             else:
                 action = poliz.pop(0).name
                 if action in ["+","-","*","/"]:
@@ -1018,16 +1068,18 @@ class GUILogic(QDialog):
                         value_type='float'
                     else:
                         value_type='int' 
-                    
-                    var_fid = int(variable.fid)
-                    idn = self.t_idns[var_fid-1]
-                    idn_type=idn.type
-
-                    if idn_type=="int":
-                        v = value.split('.')[0]
-                        self.variables_values.update({idn.name:v})
+                    if variable.fid ==None:
+                        self.variables_values.update({variable.name:value})
                     else:
-                        self.variables_values.update({idn.name:value})
+                        var_fid = int(variable.fid)
+                        idn = self.t_idns[var_fid-1]
+                        idn_type=idn.type
+
+                        if idn_type=="int":
+                            v = value.split('.')[0]
+                            self.variables_values.update({idn.name:v})
+                        else:
+                            self.variables_values.update({idn.name:value})
                  
                 else:
                     print("STRANGE LEXEME:",a)     

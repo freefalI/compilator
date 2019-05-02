@@ -1,10 +1,17 @@
 int a
 float b,c
-label label1,label2,exit{
+label label1,label2,label5,label4,exit{
     cout<<a
     a = -15.5
     b = 5-16 + a +0.259
     a = 5*5*9/(8-9)
+    goto label1
+label4:
+    cout<<b
+    goto exit
+label5:
+    cout<<b
+    goto label4
 label1:
     if a>0 then goto label2
         cout<<a
@@ -12,13 +19,13 @@ label1:
         cout<<a
         cin>>b
         cout<<b
-        goto exit
+        goto label5
 label2: 
     c = 5<2? -15.6 : -89
     cout<<c
     c= a* (b+4)/-2 * (1 + 1) +500
     cout<<c
-exit:	
+exit:	   
+for a = c by 3 while a <= 18-5 do for b = 1 by 9 while b <= 18 do cout<<b
 }
-for a = 1 by 1 while a < 10 do cout<<a 
     
